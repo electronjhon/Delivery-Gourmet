@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Configuración básica del documento -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Delivery Gourmet</title>
+
+  <!-- TailwindCSS (modo CDN para prototipado rápido) -->
+  <!-- ⚠️ En producción se recomienda build local -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fuente moderna -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Estilo base de la app */
+   body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+
+    /* Oculta scrollbar horizontal (mejora estética UX) */
+    .scrollbar-hide::-webkit-scrollbar{display:none}
+    .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
+  </style>
+</head>
+
+<body>
+
+<!-- Contenedor principal centrado -->
+<div class="max-w-7xl mx-auto p-6">
+
+  <!-- ================= HEADER ================= -->
+  <nav class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="text-2xl">🍽️</div>
+      <a href="index.html" class="text-2xl font-bold text-orange-600 hover:text-orange-700 transition">
+        Delivery Gourmet
+      </a>
+    </div>
+    <div class="hidden md:flex gap-8 text-sm font-medium text-gray-600">
+      <a href="index.html" class="hover:text-orange-600">Inicio</a>
+      <a href="#" class="hover:text-orange-600">Servicios</a>      
+      <a href="contacto.html" class="hover:text-orange-600">Contacto</a>
+    </div>
+  </nav>
+
+  <!-- ================= SEARCH ================= -->
+  <div class="relative mb-4">
+    <input 
+      id="search"
+      class="w-full bg-gray-100 border border-gray-200 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-orange-400"
+      placeholder="Buscar restaurantes o comida..."
+    >
+  </div>
+
+  <!-- ================= FAVORITOS ================= -->
+  <div class="mb-4">
+    <button 
+      id="favoritesBtn" 
+      class="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+    >
+      <span>♡</span>
+      <span>Mis Favoritos</span>
+    </button>
+  </div>
+
+  <!-- ================= CATEGORÍAS ================= -->
+  <div class="overflow-x-auto scrollbar-hide mb-6">
+    <!-- Contenedor dinámico (renderizado por JS) -->
+    <div id="categories" class="flex gap-3 w-max"></div>
+  </div>
+
+  <!-- ================= GRID DE TARJETAS ================= -->
+  <div id="grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+</div>
+
+<script>
+
+/* =====================================================
+   📦 DATA (Simula backend / API)
+   ===================================================== */
+const restaurants = [
+  {
+    name:"La Bella Italia",
+    category:"Italiana",
+    rating:4.8,
+    time:"30-40 min",
+    price:"€15",
+    featured:true,
+    img:"https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=1200"
+  },
+  {
+    name:"El Mariachi",
+    category:"Mexicana",
+    rating:4.6,
+    time:"25-35 min",
+    price:"€12",
+    featured:true,
+    img:"https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?q=80&w=1200"
+  },
+  {
+    name:"Sakura Sushi",
+    category:"Japonesa",
+    rating:4.9,
+    time:"35-45 min",
+    price:"€20",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1553621042-f6e147245754?q=80&w=1200"
+  },
+  {
+    name:"Green Life",
+    category:"Vegana",
+    rating:4.7,
+    time:"20-30 min",
+    price:"€10",
+    featured:true,
+    img:"https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1200"
+  },
+  {
+    name:"Burger King Station",
+    category:"Comida Rápida",
+    rating:4.3,
+    time:"15-25 min",
+    price:"€8",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200"
+  },
+  {
+    name:"Dragon Wok",
+    category:"China",
+    rating:4.5,
+    time:"30-40 min",
+    price:"€13",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=1200"
+  },
+
+  /* NUEVOS RESTAURANTES */
+
+  {
+    name:"Mediterranean Dream",
+    category:"Mediterránea",
+    rating:4.8,
+    time:"35-45 min",
+    price:"€18",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1563379091339-03246963d96c?q=80&w=1200"
+  },
+  {
+    name:"Thai Spice",
+    category:"Tailandesa",
+    rating:4.6,
+    time:"30-40 min",
+    price:"€14",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1559847844-5315695dadae?q=80&w=1200"
+  },
+  {
+    name:"Taj Mahal",
+    category:"India",
+    rating:4.7,
+    time:"35-45 min",
+    price:"€16",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?q=80&w=1200"
+  },
+  {
+    name:"Grill Master",
+    category:"Parrilla",
+    rating:4.8,
+    time:"40-50 min",
+    price:"€20",
+    featured:true,
+    img:"https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?q=80&w=1200"
+  },
+  {
+    name:"La Boulangerie",
+    category:"Francesa",
+    rating:4.9,
+    time:"25-35 min",
+    price:"€12",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200"
+  },
+  {
+    name:"Coffee Corner",
+    category:"Cafetería",
+    rating:4.5,
+    time:"15-25 min",
+    price:"€8",
+    featured:false,
+    img:"https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1200"
+  }
+];
+
+/* Categorías disponibles */
+const categories = [
+  "Todas","Cafetería","China","Comida Rápida","Francesa","India",
+  "Italiana","Japonesa","Mediterránea","Mexicana","Parrilla","Tailandesa"
+];
+
+/* =====================================================
+   🧠 ESTADO GLOBAL (simula un mini store tipo React)
+   ===================================================== */
+let selectedCategory = "Todas";   // categoría activa
+let showFavorites = false;       // toggle favoritos
+let favorites = new Set();       // colección eficiente de favoritos
+
+/* Referencias DOM */
+const categoriesEl = document.getElementById("categories");
+const grid = document.getElementById("grid");
+
+/* =====================================================
+   🎛️ RENDER DE CATEGORÍAS (UI dinámica)
+   ===================================================== */
+categories.forEach(cat=>{
+  const btn = document.createElement("button");
+
+  btn.textContent = cat;
+
+  btn.className = "px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition whitespace-nowrap";
+
+  /* Evento de selección */
+  btn.onclick = ()=>{
+    selectedCategory = cat;
+
+    renderCategories(); // actualiza estilos
+    render();           // actualiza tarjetas
+  };
+
+  categoriesEl.appendChild(btn);
+});
+
+/* Actualiza estilos de categorías activas */
+function renderCategories(){
+  [...categoriesEl.children].forEach(btn=>{
+    if(btn.textContent === selectedCategory){
+      btn.className = "px-4 py-2 rounded-full bg-orange-500 text-white whitespace-nowrap";
+    } else {
+      btn.className = "px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 transition whitespace-nowrap";
+    }
+  });
+}
+
+/* =====================================================
+   🧩 RENDER PRINCIPAL (CORE DE LA APP)
+   ===================================================== */
+function render(){
+
+  /* Obtener texto de búsqueda */
+  const search = document.getElementById("search").value.toLowerCase();
+
+  /* Limpia grid (render completo) */
+  grid.innerHTML = "";
+
+  restaurants
+    /* ================= FILTROS ================= */
+    .filter(r=>{
+
+      /* Filtro por categoría */
+      if(selectedCategory !== "Todas" && r.category !== selectedCategory) return false;
+
+      /* Filtro por favoritos */
+      if(showFavorites && !favorites.has(r.name)) return false;
+
+      /* Filtro por búsqueda */
+      if(!r.name.toLowerCase().includes(search)) return false;
+
+      return true;
+    })
+
+    /* ================= RENDER DE TARJETAS ================= */
+    .forEach(r=>{
+
+      const card = document.createElement("div");
+
+      card.className = "bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden";
+
+      card.innerHTML = `
+        <div class="relative">
+          <img src="${r.img}" class="h-44 w-full object-cover"/>
+
+          ${r.featured 
+            ? `<div class="absolute top-3 left-3 bg-orange-500 text-white text-sm px-3 py-1 rounded-full">Destacado</div>`
+            : ""
+          }
+        </div>
+
+        <div class="p-4">
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-semibold text-lg">${r.name}</h3>
+            <button class="fav text-xl">${favorites.has(r.name) ? "❤️" : "🤍"}</button>
+          </div>
+
+          <div class="text-sm text-gray-500 mb-2">
+            <span class="bg-gray-100 px-2 py-1 rounded">${r.category}</span>
+          </div>
+
+          <div class="flex gap-4 text-sm text-gray-600">
+            <span>⭐ ${r.rating}</span>
+            <span>🕒 ${r.time}</span>
+            <span>$ Mín. ${r.price}</span>
+          </div>
+        </div>
+      `;
+
+      /* Evento: agregar/quitar favoritos */
+      card.querySelector(".fav").onclick = ()=>{
+        if(favorites.has(r.name)){
+          favorites.delete(r.name);
+        } else {
+          favorites.add(r.name);
+        }
+
+        /* Re-render para actualizar icono */
+        render();
+      };
+
+      grid.appendChild(card);
+    });
+}
+
+/* =====================================================
+   🔎 EVENTOS GLOBALES
+   ===================================================== */
+
+/* Búsqueda en tiempo real */
+document.getElementById("search")
+  .addEventListener("input", render);
+
+/* Toggle de favoritos */
+document.getElementById("favoritesBtn").onclick = ()=>{
+  showFavorites = !showFavorites;
+
+  /* Feedback visual */
+  document.getElementById("favoritesBtn")
+    .classList.toggle("bg-orange-200");
+
+  render();
+};
+
+/* =====================================================
+   🚀 INICIALIZACIÓN
+   ===================================================== */
+renderCategories();
+render();
+
+</script>
+
+</body>
+</html>
